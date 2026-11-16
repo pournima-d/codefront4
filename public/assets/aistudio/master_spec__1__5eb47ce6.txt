@@ -1,0 +1,106 @@
+BATON - RESEARCH CONTINUITY PLATFORM (ROUND 3 MASTER SPEC)
+Project name stays exactly: BATON. Team Kernel / MITAOE.
+
+1. PROBLEM
+When a research-group member leaves, decisions, unfinished work, risks, dependencies and contacts leave with them.
+BATON reconstructs project state from AUTHORISED sources and produces a reviewable, role-filtered handover.
+Rules: every claim links to a source span; uncertainty is shown, never invented; humans approve before sharing;
+synthetic data only; nothing restricted leaks to people not allowed to see it.
+
+2. WORKFLOW (5 stages, keep names)
+01 Connect -> 02 Reconstruct -> 03 Verify -> 04 Review -> 05 Handover
+
+3. APP STRUCTURE: MULTI-TAB (NOT ONE PAGE). Hash routes, each its own screen, sidebar/top nav.
+#/login (first screen always) | #/overview | #/sources | #/map | #/records | #/review | #/handover
+#/team (workflow chart + presence) | #/radar (NEW) | #/coldstart (NEW) | #/redaction (NEW) | #/audit
+Tabs a role may not use are hidden AND blocked by the server (403 + audit row ACCESS_DENIED).
+
+4. LOGIN (first thing the user sees)
+- Email + password portal. Passwords hashed with scrypt. Session in HttpOnly cookie + CSRF token, sessions stored in DB.
+- Lockout after 5 failed tries (15 min). Generic error text. No demo tokens exposed, no unauthenticated reset route.
+- After password: screen "Verify with camera? (optional)". Buttons: [Use camera check] [Skip for now].
+  Camera = on-device presence preview via getUserMedia only. NOT face recognition, NO media stored.
+  Skip still logs in; user sees only what their role allows. Sensitive actions (reveal unredacted text,
+  publish handover) need either a camera check this session OR password re-entry.
+- Demo accounts (password: Baton@2026): see section 6.
+
+5. ROLES (server-enforced)
+PI_LEAD: everything incl. publish handover, manage members, read audit, resolve redactions.
+RESEARCHER: view, upload, reconstruct, edit records, verify, draft handover, run radar.
+REVIEWER: view, verify, review decisions (approve/reject/request changes/flag gap).
+INCOMING_MEMBER: view published handover only, acknowledge receipt, take Cold-Start Test.
+AUDITOR: view shared records, read audit log.
+Evidence status and approval are SEPARATE axes. Acknowledgement = receipt only, not agreement.
+
+6. DEMO USERS (all synthetic)
+elena.vance@baton-lab.edu  PI_LEAD        | marcus.chen@baton-lab.edu  RESEARCHER (outgoing)
+priya.nair@baton-lab.edu   REVIEWER       | aria.patel@baton-lab.edu   INCOMING_MEMBER
+jordan.lee@baton-lab.edu   AUDITOR
+Project: "Solid-State Li-Garnet (LLZO) Electrolyte Interface Continuity" (slug solid-state-llzo-continuity)
+
+7. CORE RULES / FORMULAS
+- Six evidence states only: SUPPORTED, CONFLICTING, UNSUPPORTED, STALE, NEEDS_REVIEW, NOT_ESTABLISHED.
+  SUPPORTED only if quoted text is found verbatim in the cited span. Never show truth/confidence percentages
+  (API rejects confidence_score with 422).
+- Missing owner/date stay UNKNOWN (null), never guessed.
+- Approval is bound to ONE record version; any later edit invalidates it.
+- Pre-AI filter in SQL: visibility_level='PROJECT_SHARED' AND exclude_from_ai=0 before any span is read.
+  Records citing a restricted span are dropped from handovers. Log AI_CONTEXT_FILTERED.
+- Duplicate upload = SHA-256 match -> 409. Max 2 MB. Allowed: PDF, MD/TXT, CSV, JSON. Scanned PDF -> NEEDS_OCR.
+- Locators: PDF page/para, note section/lines, CSV row, JSON record.
+- Extraction is deterministic/rule-based (baton-deterministic-extractor). Gemini is OPTIONAL and must never be required;
+  if the key is missing or the call fails, fall back silently to deterministic with a visible "rule-based" label.
+
+8. THREE ROUND-3 IMPROVEMENTS (exactly these)
+A) KNOWLEDGE-DEBT RADAR (#/radar): scan approved+draft records and flag: single known owner (e.g. departing member),
+   only WEAK/STALE/UNSUPPORTED evidence, tasks/risks with UNKNOWN owner, unresolved decisions/gaps, no source after 30 days.
+   Rank with "priority points" (single owner +40, unknown owner +25, weak/stale evidence +20, open gap +15) shown as
+   High (>=60) / Medium (30-59) / Low bands. Each row: why flagged, linked span, suggested follow-up, [Assign owner] [Open record].
+   Not a truth score; label it "follow-up priority".
+B) COLD-START HANDOVER TEST (#/coldstart): from the APPROVED handover, generate practical newcomer questions
+   (goals, decisions, pending tasks, dependencies, risks, contacts) by record type templates. Incoming member answers in text;
+   system checks answers/questions against approved records and reports which questions the handover CANNOT answer
+   (coverage gaps) and which records are never asked about. Show "Handover completeness: X of Y questions answerable".
+   Disclaimer: measures record completeness, not a person's competence. Results saved per handover version.
+C) SENSITIVE-CONTENT DETECTION AND REDACTION (#/redaction): scan sources and handover items for emails, phone numbers,
+   API keys/tokens/passwords, ID numbers, and "RESTRICTED"/"patent" keywords. Show highlighted proposals; reviewer
+   (PI_LEAD/RESEARCHER) confirms or rejects each. Confirmed redactions are stored as overlays (original kept, PI-only)
+   and applied to handover output as [REDACTED:type]. Nothing auto-redacted without human confirmation. Audited.
+
+9. TEAM WORKFLOW CHART + PRESENCE (#/team)
+- Swimlane chart: one lane per member, nodes = their individual work (tasks/records/reviews) mapped to stages 01-05.
+- Click a member (or one of their work nodes): side panel shows ONLINE / AWAY / OFFLINE, "currently working on: <tab/record>",
+  last seen time, and their open items.
+- Presence: client heartbeat every 15 s with current route/record; ONLINE if last_seen < 30 s, AWAY < 5 min, else OFFLINE.
+  Stored in DB; updates live via polling or SSE.
+
+10. FILE UPLOAD: DRAG AND DROP
+Large dropzone on #/sources, multiple files, click-to-browse fallback + keyboard accessible, per-file progress,
+type/size validation, clear errors (duplicate 409, too large 413, bad type 415, NEEDS_OCR), visibility choice
+(PROJECT_SHARED / RESTRICTED_PI_ONLY) and exclude-from-AI checkbox per file, then immediate span preview.
+
+11. DATA SAFETY (power cut must not lose data)
+SQLite with WAL, PRAGMA synchronous=FULL, foreign_keys=ON, busy_timeout. All multi-step writes in transactions.
+Uploads: write temp file -> fsync -> atomic rename -> then DB row. Sessions, presence, drafts, radar/test results all in DB.
+Unsaved form text autosaves every 3 s to server draft (+ localStorage backup) and restores after refresh.
+DATA_DIR env var for persistent disk. Migrations NEVER drop data (no --clean). Audit table append-only
+(BEFORE UPDATE and BEFORE DELETE triggers). Daily automatic DB backup copy.
+
+12. RELIABILITY / UX
+Empty states with next-step hints, loading skeletons, double-click safe buttons (idempotent), refresh-safe routes,
+friendly error toasts, no hangs (timeouts 10 s). Works on mobile width. Accessible: focus rings, ARIA, table alternative to map.
+
+13. DESIGN: KEEP THE EXISTING BATON COLOUR PALETTE (also for all charts/graphs)
+Navy header/text #0F172A | Primary blue #2563EB | Green (supported/ok) #059669 | Amber (partial/weak) #D97706
+Red (rejected/denied) #DC2626 | Purple (audit/review) #7C3AED | Slate muted #64748B | Page bg #F8FAFC | Border #E2E8F0
+Status chips: green=SUPPORTED/APPROVED, amber=WEAK/PARTIAL/NEEDS_REVISION, red=REJECTED/UNSUPPORTED, blue=info, purple=audit.
+Layout style (from the 2 reference screenshots): large bold geometric headlines, soft peach/orange-to-cream gradient hero on login,
+rounded pill buttons, circle/pill/diamond geometric shapes (using palette colours only), generous whitespace, floating
+cards. Every tab has its OWN distinct layout (not the same card grid repeated): e.g. Overview = hero + stage tiles,
+Map = full-canvas graph, Records = split table/inspector, Review = queue cards, Team = swimlanes, Radar = ranked heat list,
+Cold-Start = chat-style quiz, Redaction = side-by-side original/redacted.
+
+14. SUBMISSION ARTEFACTS (generate in repo)
+README.md (clone, install, run, env vars, demo logins, tests), FEATURES.md (only finished features), ARCHITECTURE.md,
+TESTING.md, ROADMAP.md, DISCLOSURES.md (Google AI Studio / Gemini used as dev assistant; deterministic extractor),
+automated tests for main journeys, failure cases, permissions, duplicate upload, restart persistence.

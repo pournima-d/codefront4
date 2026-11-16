@@ -1,0 +1,1744 @@
+# BATON — ROUND 3 FINAL PRODUCT ENGINEERING, SECURITY, QUALITY AND COMPETITION UPGRADE
+
+You are acting as a complete senior engineering team consisting of:
+
+- Principal Software Architect
+- Senior React and TypeScript Engineer
+- Senior Node.js and Express Backend Engineer
+- Database Engineer
+- Application Security Engineer
+- AI and Information Retrieval Engineer
+- QA Automation Engineer
+- Product Designer
+- Accessibility Specialist
+- Technical Documentation Engineer
+- Independent Hackathon Product Evaluator
+
+Your responsibility is to transform the EXISTING BATON application into a reliable, secure, polished and complete final-round product.
+
+This is an existing project. You are NOT being asked to create a new application.
+
+You MUST inspect the complete existing repository before changing anything.
+
+==================================================
+PART 1 — PROJECT IDENTITY AND NON-NEGOTIABLE RULES
+==================================================
+
+Product name: BATON
+
+Product description:
+
+BATON is an evidence-first, permission-aware research continuity platform that reconstructs project knowledge from authorized sources and produces a reviewable, role-filtered handover when a team member leaves.
+
+Core workflow:
+
+01 CONNECT
+02 RECONSTRUCT
+03 VERIFY
+04 REVIEW
+05 HANDOVER
+
+Technology currently present in the uploaded project:
+
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS
+- Express
+- Node.js
+- better-sqlite3
+- SQLite
+- Google GenAI SDK where actually integrated
+- Existing REST API
+- Existing authentication and session management
+
+IMPORTANT RULES:
+
+1. Preserve the existing BATON identity, product purpose, visual assets, features and working functionality.
+2. Do not rebuild the project from scratch.
+3. Do not replace the backend with a mock backend.
+4. Do not replace SQLite with browser localStorage.
+5. Do not replace working APIs with hardcoded frontend data.
+6. Do not remove existing navigation sections.
+7. Do not remove the existing roles or weaken permissions.
+8. Do not remove existing tests just to make the test suite pass.
+9. Do not delete existing user data during migrations.
+10. Do not create fake AI functionality.
+11. Do not claim that an AI model is integrated unless an actual server-side model request is implemented and verified.
+12. Do not introduce fake success messages.
+13. Do not silently ignore failed operations.
+14. Do not fabricate testing results.
+15. Do not expose secrets, tokens, passwords or restricted content in frontend responses.
+16. Do not introduce new features that are unrelated to the original product.
+17. Every modification must preserve backward compatibility wherever reasonably possible.
+18. Never claim production security or compliance based only on automated tests.
+
+The final product must remain BATON.
+
+==================================================
+PART 2 — COMPLETE CODEBASE AUDIT
+==================================================
+
+Before modifying code, inspect EVERY project file.
+
+Inspect at minimum:
+
+- package.json
+- tsconfig.json
+- vite.config.ts
+- server.ts
+- server/db.ts
+- server/auth.ts
+- server/routes.ts
+- server/engine.ts
+- server/seed.ts
+- src/App.tsx
+- src/types.ts
+- src/lib/api.ts
+- src/index.css
+- src/components/*
+- src/components/tabs/*
+- tests/*
+- README.md
+- ARCHITECTURE.md
+- FEATURES.md
+- FEATURES_AND_TUTORIAL.md
+- TESTING.md
+- ROADMAP.md
+- DISCLOSURES.md
+- AI_STUDIO_PROMPT.md
+- .env.example
+
+Search the entire repository for:
+
+- TODO
+- FIXME
+- HACK
+- placeholder
+- mock
+- hardcoded
+- unsafe
+- bypass
+- unprotected
+- any ignored errors
+- empty catch blocks
+- unused functions
+- duplicate routes
+- duplicate database queries
+- inconsistent role checks
+- inconsistent visibility checks
+- hardcoded dates
+- hardcoded secrets
+- client-controlled permissions
+- missing input validation
+- unhandled asynchronous operations
+
+Produce an internal audit list.
+
+For every finding, identify:
+
+- File
+- Function or endpoint
+- Actual problem
+- Severity: Critical, High, Medium or Low
+- Why it matters
+- Exact correction
+- Regression test required
+
+Do not stop after producing the audit. IMPLEMENT the fixes.
+
+==================================================
+PART 3 — CRITICAL AUTHENTICATION AND SECURITY FIXES
+==================================================
+
+SECURITY ISSUE A: PUBLIC ROLE ESCALATION
+
+Inspect public registration in server/routes.ts.
+
+The current registration logic accepts a role from the request body if it matches a valid role.
+
+This is unsafe because public users must not be able to register as PI_LEAD, REVIEWER or AUDITOR.
+
+Implement:
+
+- Public registration always creates a RESEARCHER account or a limited pending account.
+- Ignore all privileged role values supplied by the client.
+- Only an authorized PI_LEAD can assign or change project membership roles.
+- Verify the PI has permission to manage that specific project.
+- Prevent unauthorized role escalation through direct API requests.
+- Record membership changes in the audit log.
+- Add regression tests for every privileged role.
+- Confirm that the frontend cannot bypass backend authorization.
+
+SECURITY ISSUE B: CAMERA AUTHENTICATION
+
+Inspect the camera authentication endpoint in server/routes.ts and session validation in server/auth.ts.
+
+The existing implementation accepts a client-provided cameraConfirmed boolean.
+
+A client-provided boolean must NEVER be treated as proof of identity.
+
+Implement:
+
+- Remove camera login as an independent authentication method.
+- Require normal password-based authentication before sensitive authentication.
+- Do not create authenticated sessions solely from a cameraConfirmed field.
+- Do not allow the client to set camera_verified directly.
+- Do not treat getUserMedia permission as biometric identity verification.
+- If retaining the camera preview, make it an optional local-only presence preview.
+- Do not upload or store camera footage.
+- Add tests proving that a forged cameraConfirmed request cannot authenticate another user.
+- Update all UI labels to describe the camera feature truthfully.
+
+SECURITY ISSUE C: SESSION MANAGEMENT
+
+Review the complete session lifecycle.
+
+Implement and verify:
+
+- Cryptographically secure session identifiers.
+- HttpOnly session cookies.
+- Secure cookies in production HTTPS.
+- Appropriate SameSite settings.
+- Session expiry.
+- Logout invalidation.
+- Session rotation after authentication and privilege changes.
+- CSRF protection for all state-changing operations.
+- Server-side session invalidation.
+- No session tokens in URLs.
+- No passwords or bearer tokens in browser logs.
+- No session secrets in API error messages.
+- Correct behavior after browser refresh.
+- Correct behavior after expired sessions.
+- Protection against session fixation.
+
+Do not break the existing AI Studio iframe compatibility mechanism unless you provide an equally secure alternative.
+
+SECURITY ISSUE D: RATE LIMITING
+
+Inspect all authentication and sensitive routes.
+
+Implement:
+
+- Login rate limiting.
+- Registration rate limiting.
+- Sensitive-action rate limiting.
+- Upload rate limiting.
+- Re-authentication rate limiting.
+- Trusted proxy configuration.
+- Do not trust arbitrary X-Forwarded-For headers.
+- Do not permit public clients to disable rate limiting.
+- Do not expose test-only rate-limit overrides in production.
+- Return appropriate HTTP 429 responses.
+- Provide a useful retry message without exposing internal security details.
+
+SECURITY ISSUE E: INPUT VALIDATION
+
+Validate every request at the server boundary.
+
+Use strict schemas or equivalent validation.
+
+Validate:
+
+- Project IDs.
+- User IDs.
+- Record IDs.
+- Source IDs.
+- Note IDs.
+- Handover IDs.
+- Redaction proposal IDs.
+- Cold-Start run IDs.
+- Enum values.
+- Role values.
+- Visibility values.
+- File sizes.
+- MIME types.
+- Filenames.
+- String lengths.
+- Arrays.
+- Nested JSON.
+- Numeric ranges.
+- Dates.
+- Pagination parameters.
+
+Reject malformed data with a consistent 400 or 422 response.
+
+Never silently substitute a different project or record when an ID is invalid.
+
+SECURITY ISSUE F: AUTHORIZATION
+
+Every protected endpoint must verify authorization independently.
+
+Never rely only on hidden navigation items or frontend role checks.
+
+Enforce project membership and resource ownership at the backend.
+
+Create and verify a centralized authorization layer.
+
+The authorization rules must account for:
+
+PI_LEAD:
+- Authorized project administration.
+- Team management.
+- Review and publishing permissions as defined by the product.
+- Restricted PI-only content.
+- Sensitive-data reveal only through the appropriate authenticated process.
+
+RESEARCHER:
+- Authorized shared-source ingestion.
+- Authorized record and note editing.
+- Reconstruction and permitted workflow operations.
+- No privileged administration.
+- No unauthorized restricted-source access.
+
+REVIEWER:
+- Authorized evidence inspection.
+- Review decisions.
+- No unauthorized project administration.
+- No handover publishing unless separately authorized.
+
+INCOMING_MEMBER:
+- Published and authorized handover only.
+- Permitted acknowledgement.
+- Cold-Start questions based on the authorized published handover.
+- No access to restricted source material, private drafts or other members' private evaluation answers.
+
+AUDITOR:
+- Read-only audit access according to project permissions.
+- No unauthorized editing or publishing.
+
+Never assume that a role alone grants access to every project.
+
+SECURITY ISSUE G: PRIVATE AND RESTRICTED CONTENT
+
+Implement the following strict rules:
+
+PRIVATE_OWNER:
+- Only the authenticated owner may access the private source or note.
+- Other users, including PI_LEAD, must not receive the private content unless an explicit, documented product permission is introduced.
+- Private sources must not be included in shared reconstruction.
+- Private sources must not appear in shared handovers.
+- Private sources must not leak through error messages, search results, counts, logs or metadata.
+- Owner-only access must be checked server-side.
+
+RESTRICTED_PI_ONLY:
+- Only authorized PI_LEAD users may access restricted content.
+- Other roles must not retrieve the original content through any API.
+- Ensure restrictions apply to spans, downloads, previews, summaries, search, notes and handovers.
+
+PROJECT_SHARED:
+- Available only to authorized members of that project.
+
+Create automated cross-role and cross-project isolation tests.
+
+SECURITY ISSUE H: FILE UPLOADS
+
+Review every upload route.
+
+Implement:
+
+- Strict extension allowlist.
+- MIME verification.
+- File signature validation where possible.
+- Maximum file size.
+- Safe filenames.
+- Random server-generated storage names.
+- Path traversal prevention.
+- Duplicate detection.
+- Atomic writes.
+- Temporary file cleanup after failure.
+- No direct public storage access.
+- No executable uploads.
+- No unsafe HTML rendering.
+- Correct cleanup after deletion.
+- Correct source ownership and visibility checks.
+
+Retain support for the existing PDF, Markdown, text, CSV and JSON formats.
+
+Image-only PDFs must be marked NEEDS_OCR. Never pretend OCR succeeded if it did not.
+
+SECURITY ISSUE I: SECRETS AND DATA PROTECTION
+
+- Keep Gemini API keys exclusively on the server.
+- Never expose environment variables to the browser.
+- Never commit .env files.
+- Provide a complete .env.example without real credentials.
+- Sanitize sensitive logs.
+- Use parameterized SQL queries.
+- Prevent SQL injection.
+- Prevent stored and reflected XSS.
+- Use appropriate security headers.
+- Validate CORS configuration.
+- Do not return stack traces in production.
+- Do not reveal password hashes or session secrets.
+
+==================================================
+PART 4 — KNOWLEDGE-DEBT RADAR
+==================================================
+
+This is one of the three mandatory Round 3 improvements.
+
+Inspect:
+
+- server/engine.ts
+- server/routes.ts
+- src/components/tabs/RadarTab.tsx
+- database schema and migrations
+- all radar tests
+
+FIX 1: HARDCODED DATE
+
+Remove:
+
+Date.parse('2026-11-16T00:00:00Z')
+
+Use a single consistent scan timestamp captured at scan start.
+
+Ensure:
+
+- Old records receive appropriate age calculations.
+- Future-dated records are not incorrectly treated as extremely old.
+- Missing dates remain UNKNOWN.
+- Invalid dates are flagged.
+- Timezone handling is consistent.
+- Repeated scans do not create inconsistent results.
+
+FIX 2: REAL KNOWLEDGE CONCENTRATION
+
+The current code calculates ownerCounts but does not properly use it in scoring.
+
+Implement actual ownership concentration analysis.
+
+Evaluate:
+
+- Records with one known owner.
+- Critical decisions with one known owner.
+- Experiments with one known owner.
+- Unresolved tasks with one known owner.
+- Dependencies with no documented backup.
+- Critical knowledge with missing ownership.
+- Knowledge supported by only one source.
+- Outdated supporting evidence.
+
+Do not assume that every single-owner record is automatically dangerous.
+
+Use transparent, explainable scoring.
+
+FIX 3: SCORING MODEL
+
+Create a documented scoring model.
+
+Each finding should include:
+
+- Finding ID.
+- Project ID.
+- Record ID where applicable.
+- Risk category.
+- Priority points.
+- Severity band.
+- Reasons.
+- Supporting evidence.
+- Suggested follow-up.
+- Owner.
+- Creation timestamp.
+- Last scanned timestamp.
+- Resolution status.
+- Resolution timestamp.
+- Resolution actor.
+
+Use explainable scoring with documented weights.
+
+Do not create arbitrary AI-generated numbers.
+
+Use the existing bands where appropriate:
+
+HIGH: 60 and above.
+MEDIUM: 30–59.
+LOW: below 30.
+
+FIX 4: RESCAN SAFETY
+
+The existing scan process deletes all radar findings for a project.
+
+This can destroy previously resolved findings.
+
+Replace destructive rescanning with a stable upsert or equivalent reconciliation strategy.
+
+Requirements:
+
+- Stable finding identity.
+- Preserve resolved findings where the underlying issue is unchanged.
+- Update evidence when a finding changes.
+- Do not duplicate findings.
+- Preserve resolution history.
+- Mark disappeared findings as inactive or resolved according to a documented rule.
+- Record each scan in an audit event.
+- Use database transactions.
+
+FIX 5: RADAR USER EXPERIENCE
+
+The dashboard must show:
+
+- Overall knowledge-debt level.
+- High-priority findings.
+- Medium-priority findings.
+- Low-priority findings.
+- Single-owner concentration.
+- Missing-owner risks.
+- Stale evidence.
+- Unsupported claims.
+- Unresolved dependencies.
+- Unfinished tasks.
+- Recommended actions.
+
+Every risk must be clickable and open its supporting record.
+
+Every recommendation must explain WHY it was generated.
+
+Add filters for:
+
+- Severity.
+- Category.
+- Owner.
+- Resolution status.
+- Record type.
+
+Add a useful empty state when no debt findings exist.
+
+Add a loading state, failure state and retry action.
+
+Add a clear scan timestamp.
+
+Add a rescan confirmation if it may change existing findings.
+
+Do not show fake metrics.
+
+==================================================
+PART 5 — COLD-START HANDOVER TEST
+==================================================
+
+This is the second mandatory Round 3 improvement.
+
+Inspect:
+
+- server/engine.ts
+- server/routes.ts
+- src/components/tabs/ColdStartTab.tsx
+- handover generation.
+- test persistence.
+- database relationships.
+
+FIX 1: QUESTION QUALITY
+
+Generate practical newcomer questions from the latest published, authorized handover.
+
+Question categories must include:
+
+- Project objective.
+- Important decisions.
+- Current status.
+- Unresolved questions.
+- Risks.
+- Dependencies.
+- Next actions.
+- Responsibilities.
+- Evidence and provenance.
+- Known limitations.
+
+Do not generate questions from restricted or unpublished records.
+
+Each question must have a traceable relationship to an authorized handover item.
+
+FIX 2: ANSWER EVALUATION
+
+The current basic token-overlap evaluator is not sufficient for strong answer evaluation.
+
+Improve it.
+
+Implement:
+
+- Whitespace normalization.
+- Case normalization.
+- Punctuation normalization.
+- Equivalent terminology where explicitly defined.
+- Abbreviation handling.
+- Multiple acceptable answer concepts.
+- Partial credit for genuinely relevant answer components.
+- Clear explanation of expected answer concepts.
+- Explicit unanswered status.
+- Correct handling of invalid or empty submissions.
+
+Do not reward meaningless keyword stuffing.
+
+Do not claim that a heuristic score measures a person's intelligence, competence or employment suitability.
+
+If Gemini is used, the evaluation must:
+
+- Run server-side.
+- Use only authorized handover information.
+- Treat source text as untrusted data.
+- Prevent source text from overriding system instructions.
+- Return structured validated output.
+- Never invent facts.
+- Fall back safely when the model is unavailable.
+- Disclose that automated evaluation is approximate.
+
+If Gemini is not actually integrated, retain a transparent deterministic evaluation engine and document its limitations.
+
+FIX 3: EVALUATION PRIVACY
+
+- Incoming members may access their own permitted runs.
+- They must not automatically receive other users' private answers.
+- PI access must follow a documented permission rule.
+- Other project roles must not obtain evaluation answers without authorization.
+- Validate run ownership on every retrieval request.
+
+FIX 4: RESULT PRESENTATION
+
+Show:
+
+- Number of questions.
+- Answered questions.
+- Unanswered questions.
+- Correctly addressed concepts.
+- Partially addressed concepts.
+- Missing knowledge.
+- Related handover sections.
+- Relevant supporting records.
+- Suggested reading.
+- Clear next actions.
+
+Use honest language.
+
+Call the score a knowledge coverage indicator, not a competence score.
+
+FIX 5: TEST SAFETY
+
+- No published handover: display an informative empty state.
+- No questions: explain why.
+- No answer: accept and mark unanswered.
+- Repeated submission: prevent duplicate runs unless a new attempt is intentional.
+- Refresh: preserve the saved run.
+- Expired session: require reauthentication.
+- Unauthorized run ID: return 403 or 404 without leaking content.
+
+==================================================
+PART 6 — SENSITIVE-CONTENT DETECTION AND REDACTION
+==================================================
+
+This is the third mandatory Round 3 improvement.
+
+Inspect:
+
+- server/engine.ts
+- server/routes.ts
+- server/auth.ts
+- src/components/tabs/RedactionTab.tsx
+- src/components/SensitiveAuthModal.tsx
+- handover generation.
+- database schema.
+
+FIX 1: AUTHORIZATION
+
+Every redaction proposal must be validated against:
+
+- Current authenticated user.
+- Project membership.
+- Source ownership.
+- Source visibility.
+- Target record visibility.
+- Target existence.
+- Current redaction status.
+
+Never trust a proposal ID alone.
+
+Never allow users to resolve proposals from another unauthorized project.
+
+FIX 2: DETECTION
+
+Support sensible detection of:
+
+- Email addresses.
+- Phone numbers.
+- API keys.
+- Access tokens.
+- Password-like strings.
+- Common credential formats.
+- Private keys.
+- Identification numbers where applicable.
+- Sensitive personal information.
+- Configured project-specific sensitive patterns.
+
+Use deterministic detection first.
+
+Use confidence labels only if their calculation is meaningful and documented.
+
+Do not claim perfect detection.
+
+FIX 3: FALSE POSITIVES
+
+Implement:
+
+- Pattern context.
+- Validation of matched formats.
+- Deduplication.
+- Stable proposal IDs.
+- Clear redaction type.
+- Source locator.
+- Match preview with masking.
+- Human confirmation.
+- False-positive rejection.
+- Audit history.
+
+FIX 4: HUMAN CONTROL
+
+The system must propose redactions, not silently modify original source documents.
+
+The user must explicitly:
+
+- Confirm a proposal.
+- Reject a proposal.
+- Revisit a proposal where authorized.
+
+Confirmed redactions must be versioned and auditable.
+
+Rejected proposals must not silently reappear on every scan.
+
+FIX 5: HANDOVER ENFORCEMENT
+
+This is essential.
+
+A confirmed redaction must be applied to the actual handover output.
+
+Verify:
+
+- Published handover content.
+- API responses.
+- Incoming member view.
+- Exports.
+- Search results.
+- Relevant previews.
+
+Never rely only on hiding text in React.
+
+Apply redaction server-side before content is returned.
+
+Do not modify the original evidence or falsely imply that the source itself was erased.
+
+FIX 6: RESTRICTED SOURCE SCANNING
+
+Clearly distinguish:
+
+- Shared-source scanning.
+- PI-restricted-source scanning.
+- Owner-private scanning.
+
+Scan only within the current user's authorization boundary.
+
+Never disclose private scan results to unauthorized members.
+
+Never include private content in shared redaction reports.
+
+FIX 7: REPEATED SCANS
+
+- Avoid duplicate proposals.
+- Preserve previous decisions.
+- Track changed source content.
+- Reopen a previously resolved proposal only when there is a meaningful new finding.
+- Preserve the history of prior decisions.
+
+==================================================
+PART 7 — CORE FIVE-STAGE WORKFLOW
+==================================================
+
+The central product workflow must work from beginning to end.
+
+STAGE 01: CONNECT
+
+Support existing PDF, Markdown, TXT, CSV and JSON formats.
+
+Verify:
+
+- Upload validation.
+- Duplicate detection.
+- Source hashing.
+- Source metadata.
+- File visibility.
+- Source ownership.
+- Span indexing.
+- Page, section, row and record locators.
+- OCR limitation disclosure.
+- File deletion behavior.
+- Private source protection.
+- Empty upload handling.
+- Oversized file handling.
+- Invalid format handling.
+
+STAGE 02: RECONSTRUCT
+
+Generate typed records:
+
+- OBJECTIVE
+- EXPERIMENT
+- DECISION
+- RESULT
+- RISK
+- GAP
+- TASK
+- DEPENDENCY
+
+Requirements:
+
+- Every generated candidate has provenance.
+- Preserve exact source quotations.
+- Preserve source locators.
+- Do not invent missing owners.
+- Do not invent dates.
+- Do not invent decisions.
+- Unknown fields remain UNKNOWN.
+- Restricted sources are filtered before extraction.
+- Instruction-like content inside source documents is treated as untrusted input.
+- Extraction failure does not leave partial records.
+- Duplicate reconstruction does not create uncontrolled duplicates.
+- Conflicting claims remain visible.
+
+STAGE 03: VERIFY
+
+Verify:
+
+- Exact quotation.
+- Source identity.
+- Source version.
+- Span existence.
+- Project ownership.
+- Source visibility.
+- Citation validity.
+- Deleted sources.
+- Stale evidence.
+- Conflicting evidence.
+- Unsupported claims.
+- Cross-project citations.
+
+Maintain distinct evidence states:
+
+SUPPORTED
+CONFLICTING
+UNSUPPORTED
+STALE
+NEEDS REVIEW
+NOT ESTABLISHED
+
+Evidence state must remain separate from approval state.
+
+Do not create artificial confidence percentages.
+
+STAGE 04: REVIEW
+
+Support:
+
+- APPROVE.
+- REQUEST_CHANGES.
+- FLAG_GAP.
+- REJECT.
+
+Requirements:
+
+- Mandatory reviewer rationale.
+- Correct reviewer authorization.
+- Record versioning.
+- Approval bound to exact version.
+- Editing invalidates previous approval.
+- Rejected claims cannot silently enter the published handover.
+- Audit every review decision.
+- Prevent repeated accidental submissions.
+- Display clear status and history.
+
+STAGE 05: HANDOVER
+
+The handover must contain useful sections:
+
+1. Project objective.
+2. Current state.
+3. Important decisions.
+4. Experiments and results.
+5. Risks and unresolved questions.
+6. Dependencies.
+7. Responsibilities and next actions.
+8. Evidence and provenance.
+9. Known limitations.
+
+Only authorized, eligible, approved content should be included according to the existing product rules.
+
+Requirements:
+
+- Role-filtered generation.
+- Server-side redaction.
+- Restricted content exclusion.
+- Unknown values remain explicit.
+- Rejected records excluded.
+- Published version history.
+- Acknowledgement of receipt.
+- Acknowledgement bound to handover version.
+- Receipt does not imply agreement or understanding.
+- Correct behavior after edits and republication.
+- No duplicate publications from repeated clicks.
+
+==================================================
+PART 8 — DATABASE AND BACKEND RELIABILITY
+==================================================
+
+Review the complete SQLite schema and every migration.
+
+Implement:
+
+- Correct foreign keys.
+- Correct indexes.
+- Unique constraints where required.
+- Database transactions for multi-step operations.
+- Atomic record updates.
+- Consistent timestamps.
+- Safe migration handling.
+- Migration rollback or documented recovery where possible.
+- Correct foreign-key enforcement.
+- Safe database initialization.
+- Database backup strategy.
+- Safe handling of missing database files.
+- Safe handling of database corruption.
+- No accidental database deletion on deployment.
+- No production migration command that destroys existing data.
+
+Do not run destructive migrations automatically.
+
+Preserve existing records during schema upgrades.
+
+Review concurrency-sensitive operations.
+
+Make sure a partial failure cannot leave half-created handovers, incomplete redactions or inconsistent review history.
+
+AUDIT LOG:
+
+- Preserve historical events.
+- Do not expose unauthorized metadata.
+- Prevent ordinary API users from modifying or deleting audit history.
+- Use database-level protections where appropriate.
+- Record denied access.
+- Record role changes.
+- Record source visibility changes.
+- Record redaction decisions.
+- Record radar scans.
+- Record handover publication.
+- Record acknowledgement.
+- Record important authentication events.
+
+==================================================
+PART 9 — FRONTEND AND PRODUCT DESIGN
+==================================================
+
+Improve the current React interface without replacing BATON's identity.
+
+Maintain:
+
+- Existing BATON logo.
+- Existing visual assets.
+- Existing five-stage workflow.
+- Existing feature sections.
+- Existing role model.
+
+The interface should feel like a serious professional research-continuity product.
+
+DESIGN DIRECTION:
+
+- Premium research-workspace aesthetic.
+- Clean typography.
+- Consistent spacing.
+- Restrained navy and gold identity.
+- Neutral backgrounds.
+- Strong visual hierarchy.
+- Carefully controlled accent colors.
+- Consistent border radius.
+- Consistent card layouts.
+- Professional tables.
+- Clear charts.
+- High readability.
+- No unnecessary decoration.
+- No excessive gradients.
+- No excessive animations.
+- No oversized empty hero sections inside the workspace.
+
+SIDEBAR:
+
+Organize navigation into understandable groups.
+
+Keep all existing functionality accessible.
+
+Display the active project and authenticated role clearly.
+
+Add clear user/account controls.
+
+DASHBOARD:
+
+Show real API-backed information:
+
+- Number of sources.
+- Number of records.
+- Pending reviews.
+- Approved records.
+- Open risks.
+- Unresolved tasks.
+- Handover status.
+- Knowledge-debt status.
+- Recent activity.
+
+Do not use hardcoded metrics.
+
+EMPTY STATES:
+
+Every major tab must have a useful empty state.
+
+Examples:
+
+- No sources uploaded.
+- No records reconstructed.
+- No pending reviews.
+- No handover published.
+- No knowledge-debt findings.
+- No sensitive-content proposals.
+- No Cold-Start run.
+- No team activity.
+
+Each empty state must explain what the user can do next.
+
+LOADING STATES:
+
+Use consistent skeletons or progress indicators.
+
+ERROR STATES:
+
+Show understandable errors and a retry action where appropriate.
+
+SUCCESS STATES:
+
+Show success only after the server confirms the operation.
+
+FORMS:
+
+- Visible labels.
+- Helpful instructions.
+- Inline validation.
+- Clear required-field indicators.
+- Disable duplicate submission while an operation is running.
+- Prevent accidental destructive actions.
+- Confirmation for irreversible operations.
+
+TABLES:
+
+- Clear headings.
+- Appropriate empty states.
+- Sorting where useful.
+- Filtering where useful.
+- Responsive behavior.
+- Keyboard accessibility.
+
+RESPONSIVE DESIGN:
+
+Test:
+
+- Desktop.
+- Laptop.
+- Tablet.
+- Mobile.
+
+No horizontal overflow.
+
+No inaccessible controls.
+
+No hidden primary actions.
+
+ACCESSIBILITY:
+
+- Semantic HTML.
+- Keyboard navigation.
+- Visible focus.
+- Accessible labels.
+- Appropriate contrast.
+- Screen-reader-friendly status messages.
+- Modal focus management.
+- Escape handling.
+- Accessible tables.
+- Reduced-motion support.
+
+Do not rely on color alone to communicate status.
+
+==================================================
+PART 10 — NOTES STUDIO
+==================================================
+
+Review the existing Notes Studio thoroughly.
+
+Verify:
+
+- Create note.
+- Edit note.
+- Delete note.
+- Autosave behavior.
+- Manual save.
+- Private note visibility.
+- Shared note visibility.
+- Owner-only permissions.
+- Rich text formatting.
+- Lists.
+- Tables.
+- Links.
+- Undo and redo.
+- Word count.
+- Character count.
+- Export.
+
+Prevent:
+
+- Lost unsaved work.
+- Duplicate note creation.
+- Unsafe HTML.
+- Unauthorized note retrieval.
+- Private notes appearing in shared handovers.
+- Autosave overwriting newer versions.
+
+Add clear unsaved and saved indicators.
+
+==================================================
+PART 11 — TEAM AND WORK TRACKER
+==================================================
+
+Review presence, team activity and work-summary calculations.
+
+Verify:
+
+- Online status.
+- Away status.
+- Offline status.
+- Heartbeat failure.
+- Disconnected browser.
+- Multiple browser sessions.
+- Role display.
+- Project membership.
+- Work counts.
+- Activity feed.
+- Workflow ownership.
+- Unauthorized team data access.
+
+Presence should not falsely display a user as online after their session expires.
+
+Do not expose private note contents or sensitive personal information in activity feeds.
+
+All activity must be based on actual recorded events.
+
+==================================================
+PART 12 — AUTOMATED TESTING
+==================================================
+
+Do not delete existing tests.
+
+Expand the existing tests/baton.test.ts or split tests into clear suites.
+
+Run the real test commands.
+
+Required testing categories:
+
+A. AUTHENTICATION
+
+- Successful login.
+- Invalid password.
+- Empty password.
+- Invalid email.
+- Registration.
+- Privileged role registration attempt.
+- Account lockout.
+- Session expiry.
+- Logout.
+- Session reuse.
+- CSRF failure.
+- Camera authentication forgery.
+- Sensitive reauthentication.
+- Rate limiting.
+
+B. AUTHORIZATION
+
+- PI access.
+- Researcher access.
+- Reviewer access.
+- Incoming member access.
+- Auditor access.
+- Cross-project access.
+- Private source access.
+- Restricted source access.
+- Unauthorized record access.
+- Unauthorized note access.
+- Unauthorized handover access.
+- Unauthorized redaction access.
+- Unauthorized Cold-Start run access.
+
+C. UPLOADS
+
+- PDF.
+- Markdown.
+- TXT.
+- CSV.
+- JSON.
+- Empty file.
+- Oversized file.
+- Invalid extension.
+- Invalid MIME type.
+- Malformed file.
+- Duplicate file.
+- Path traversal filename.
+- Scanned PDF.
+- Storage failure.
+- Database failure.
+- Temporary file cleanup.
+
+D. RECONSTRUCTION
+
+- Successful extraction.
+- Empty source.
+- Duplicate reconstruction.
+- Unknown owner.
+- Unknown date.
+- Conflicting evidence.
+- Unsupported quotation.
+- Restricted source filtering.
+- Private source filtering.
+- Prompt injection text.
+- Extractor timeout.
+- Extractor failure.
+- No partial records after failure.
+
+E. EVIDENCE
+
+- Exact quotation.
+- Incorrect quotation.
+- Missing span.
+- Deleted source.
+- Cross-project citation.
+- Stale source.
+- Conflicting evidence.
+- Unsupported evidence.
+- Evidence state independent of approval.
+
+F. REVIEW
+
+- Approve.
+- Reject.
+- Request changes.
+- Flag gap.
+- Missing rationale.
+- Unauthorized reviewer.
+- Edit after approval.
+- Version history.
+- Duplicate review submission.
+
+G. KNOWLEDGE-DEBT RADAR
+
+- No records.
+- Single owner.
+- Multiple owners.
+- Missing owner.
+- Missing date.
+- Old evidence.
+- Future date.
+- Unsupported evidence.
+- Unresolved dependency.
+- Repeated scan.
+- Resolved finding preservation.
+- Duplicate finding prevention.
+- Unauthorized finding access.
+
+H. COLD-START
+
+- No handover.
+- Published handover.
+- Authorized question generation.
+- Restricted content exclusion.
+- Correct answer.
+- Incorrect answer.
+- Partial answer.
+- Unanswered question.
+- Equivalent terminology.
+- Empty answer.
+- Repeated submission.
+- Unauthorized run retrieval.
+- Session expiry.
+- Persisted run after restart.
+
+I. REDACTION
+
+- Email detection.
+- Phone detection.
+- Secret detection.
+- Token detection.
+- Identification-number detection where supported.
+- False positive rejection.
+- Duplicate proposal prevention.
+- Human confirmation.
+- Unauthorized resolution.
+- Cross-project access attempt.
+- Private source isolation.
+- Restricted source isolation.
+- Confirmed redaction in handover.
+- Rejected proposal behavior.
+- Repeated scanning.
+- Redaction audit history.
+
+J. HANDOVER
+
+- Empty handover.
+- Draft handover.
+- Published handover.
+- Repeated publish.
+- Unauthorized publish.
+- Restricted information exclusion.
+- Private information exclusion.
+- Rejected record exclusion.
+- Confirmed redaction application.
+- Unknown owner preservation.
+- Version changes.
+- Recipient view.
+- Acknowledgement.
+- Repeated acknowledgement.
+- Refresh.
+- Restart persistence.
+
+K. FRONTEND
+
+- All navigation tabs.
+- Empty states.
+- Loading states.
+- API errors.
+- Session expiry.
+- Refresh behavior.
+- Form validation.
+- Double-click behavior.
+- Modal accessibility.
+- Keyboard navigation.
+- Mobile layout.
+
+L. DATABASE
+
+- Migrations.
+- Foreign keys.
+- Transaction rollback.
+- Restart persistence.
+- Duplicate IDs.
+- Audit immutability.
+- File metadata consistency.
+- Backup and recovery behavior.
+
+Testing rules:
+
+- Do not merely create test files.
+- Execute them.
+- Fix failures.
+- Run them again.
+- Report the exact number of passing and failing tests.
+- Do not fabricate results.
+- Distinguish unit tests, integration tests, browser tests and manual checks.
+- Do not claim cross-browser verification unless it was performed.
+
+==================================================
+PART 13 — END-TO-END USER JOURNEYS
+==================================================
+
+Implement and verify these complete journeys.
+
+JOURNEY 1: NEW PROJECT
+
+Register.
+Log in.
+Create project.
+Invite or add authorized members.
+Verify project membership.
+Refresh.
+Confirm persistence.
+
+JOURNEY 2: SOURCE TO EVIDENCE
+
+Upload a PDF.
+Upload a Markdown note.
+Upload a CSV.
+Inspect provenance.
+Run reconstruction.
+Open Knowledge Map.
+Inspect a record.
+Verify its citation.
+Edit a record.
+Confirm approval invalidation.
+
+JOURNEY 3: REVIEW
+
+Log in as reviewer.
+Open review queue.
+Inspect source evidence.
+Approve a valid record.
+Reject an unsupported record.
+Request changes on another record.
+Inspect version history.
+Verify audit events.
+
+JOURNEY 4: KNOWLEDGE-DEBT
+
+Run Radar.
+Inspect findings.
+Open supporting records.
+Resolve a finding.
+Run Radar again.
+Confirm that unchanged resolved findings remain resolved.
+Confirm that new findings are correctly identified.
+
+JOURNEY 5: REDACTION
+
+Upload synthetic content containing a test email and test credential.
+Run detection.
+Inspect proposal.
+Reject one proposal.
+Confirm another proposal.
+Publish handover.
+Log in as incoming member.
+Verify that confirmed sensitive text is not present in the returned handover.
+
+JOURNEY 6: COLD-START
+
+Publish a handover.
+Log in as incoming member.
+Generate questions.
+Answer some questions.
+Leave another unanswered.
+Submit.
+Refresh.
+Inspect saved result.
+Verify that another incoming member cannot access private answers.
+
+JOURNEY 7: HANDOVER
+
+Prepare approved records.
+Build handover.
+Inspect all sections.
+Publish.
+Log in as incoming member.
+Open handover.
+Inspect provenance.
+Acknowledge receipt.
+Verify that the acknowledgement is bound to the correct version.
+
+JOURNEY 8: RESTART
+
+Perform important operations.
+Restart the server.
+Verify that sources, records, notes, review history, radar decisions, redactions, handovers and permitted Cold-Start runs remain correctly stored.
+
+==================================================
+PART 14 — DEPLOYMENT AND REPOSITORY
+==================================================
+
+Inspect the actual deployment configuration.
+
+Check:
+
+- package.json.
+- Vite build.
+- Express production serving.
+- Environment variables.
+- Port configuration.
+- Persistent storage.
+- SQLite database location.
+- Uploaded-file location.
+- Migration behavior.
+- Health endpoint.
+- Production error handling.
+
+Do not assume that local success proves cloud deployment works.
+
+Ensure:
+
+- npm install works.
+- npm run lint works.
+- npm test works.
+- npm run build works.
+- npm start works in production mode.
+- Health endpoint responds correctly.
+
+Do not add destructive startup database commands.
+
+Do not claim persistent deployment storage exists unless it is actually configured.
+
+If external deployment configuration cannot be modified from this environment, document exactly what the team must change manually.
+
+Use the exact repository architecture in the documentation.
+
+Do not claim that a new repository has been updated unless an actual commit and push were completed.
+
+==================================================
+PART 15 — COMPLETE DOCUMENTATION
+==================================================
+
+Update all relevant documentation to match the FINAL actual implementation.
+
+README.md must include:
+
+1. Project name.
+2. Problem statement.
+3. Solution overview.
+4. Product features.
+5. Five-stage workflow.
+6. User roles.
+7. Technology stack.
+8. Architecture.
+9. Installation.
+10. Environment variables.
+11. Database setup.
+12. Development commands.
+13. Production commands.
+14. Testing commands.
+15. Synthetic demo accounts if retained.
+16. Deployment instructions.
+17. Security model.
+18. Known limitations.
+19. Troubleshooting.
+20. AI disclosure.
+
+FEATURES.md:
+
+Document every implemented feature and distinguish completed features from partial features.
+
+ARCHITECTURE.md:
+
+Include frontend, backend, database, API, authentication, authorization, extraction, evidence verification, Radar, Cold-Start, redaction and handover.
+
+TESTING.md:
+
+Include actual test commands, test categories and verified results.
+
+DISCLOSURES.md:
+
+Truthfully identify:
+- AI tools used.
+- External libraries.
+- Model integrations.
+- Deterministic algorithms.
+- Limitations.
+- Synthetic data.
+- Human-review requirements.
+
+ROADMAP.md:
+
+Include realistic future development.
+
+Also create or update:
+
+- API documentation.
+- Role permission matrix.
+- Database schema documentation.
+- Security notes.
+- Data flow documentation.
+- Troubleshooting documentation.
+
+Do not invent third-party certifications, user testimonials, real-world deployments or accuracy metrics.
+
+==================================================
+PART 16 — FINAL PRODUCT PRESENTATION
+==================================================
+
+Make the product easy for a completely new evaluator to understand.
+
+A new evaluator should be able to identify:
+
+- What BATON does.
+- Why it exists.
+- Who should use it.
+- How the workflow works.
+- What makes it different.
+- What evidence supports its output.
+- How restricted data is protected.
+- How a handover is completed.
+
+Make the first login experience clear.
+
+Provide a guided workflow that explains the next action.
+
+Keep the experience professional and uncluttered.
+
+The five workflow stages must be visually understandable.
+
+Make the three Round 3 improvements easy to discover.
+
+Make every feature accessible without requiring a developer to explain it.
+
+==================================================
+PART 17 — IMPLEMENTATION PROCESS
+==================================================
+
+Work in controlled phases.
+
+PHASE 1:
+Complete the repository audit.
+
+PHASE 2:
+Fix critical authentication, authorization and privacy vulnerabilities.
+
+PHASE 3:
+Fix Knowledge-Debt Radar.
+
+PHASE 4:
+Fix Cold-Start Handover Test.
+
+PHASE 5:
+Fix Sensitive-content detection and redaction.
+
+PHASE 6:
+Verify the five-stage workflow.
+
+PHASE 7:
+Improve frontend usability and accessibility.
+
+PHASE 8:
+Improve database and deployment reliability.
+
+PHASE 9:
+Expand and run automated tests.
+
+PHASE 10:
+Update all documentation.
+
+PHASE 11:
+Run the complete final verification.
+
+After each phase:
+
+- List files changed.
+- Explain the changes.
+- Run relevant tests.
+- Fix failures before moving forward.
+- Preserve working functionality.
+
+If a requested change is risky, inspect dependencies before changing it.
+
+If an external service or deployment setting is inaccessible, clearly identify the limitation instead of pretending it was changed.
+
+Do not stop after writing a plan.
+
+Actually modify the existing project files.
+
+==================================================
+PART 18 — FINAL RELEASE GATE
+==================================================
+
+BATON is not ready for final release until the following conditions are met.
+
+SECURITY:
+
+[ ] Public registration cannot create privileged accounts.
+[ ] Camera confirmation cannot authenticate another user.
+[ ] Sessions and CSRF protection work.
+[ ] Every protected route checks authorization.
+[ ] Private content is isolated.
+[ ] Restricted content is isolated.
+[ ] Redaction routes enforce ownership and visibility.
+[ ] Secrets are not exposed.
+[ ] Rate limiting cannot be disabled by public clients.
+
+ROUND 3 IMPROVEMENTS:
+
+[ ] Knowledge-Debt Radar works.
+[ ] Radar scoring is explainable.
+[ ] Radar rescan preserves valid resolutions.
+[ ] Cold-Start questions use authorized published content.
+[ ] Cold-Start evaluation handles partial and unanswered responses.
+[ ] Evaluation privacy is enforced.
+[ ] Sensitive detection works on supported patterns.
+[ ] Human confirmation and rejection work.
+[ ] Confirmed redactions reach published handovers.
+
+CORE PRODUCT:
+
+[ ] Source ingestion works.
+[ ] Reconstruction works.
+[ ] Evidence verification works.
+[ ] Review works.
+[ ] Version history works.
+[ ] Handover generation works.
+[ ] Role filtering works.
+[ ] Recipient acknowledgement works.
+[ ] Audit history works.
+
+RELIABILITY:
+
+[ ] Invalid input is handled.
+[ ] Empty states work.
+[ ] Loading states work.
+[ ] API failures are handled.
+[ ] Double submissions are handled.
+[ ] Refresh works.
+[ ] Restart persistence works.
+[ ] Database transactions are correct.
+[ ] No critical errors remain.
+
+USABILITY:
+
+[ ] Main workflow is understandable.
+[ ] Navigation is consistent.
+[ ] Mobile layout works.
+[ ] Keyboard accessibility works.
+[ ] Error messages are understandable.
+[ ] All three improvements are discoverable.
+
+DOCUMENTATION:
+
+[ ] README matches actual code.
+[ ] Architecture matches actual code.
+[ ] Testing documentation matches actual results.
+[ ] Security documentation is accurate.
+[ ] AI disclosures are accurate.
+[ ] Deployment instructions are reproducible.
+[ ] Roadmap is realistic.
+
+FINAL RESPONSE REQUIRED:
+
+When implementation is complete, provide:
+
+1. Executive summary.
+2. Full audit findings.
+3. All security fixes.
+4. All three Round 3 improvements.
+5. Core workflow fixes.
+6. Frontend improvements.
+7. Database changes.
+8. Complete list of modified files.
+9. New files created.
+10. Tests added.
+11. Exact test commands executed.
+12. Exact test results.
+13. Build result.
+14. Lint result.
+15. Remaining bugs.
+16. Remaining limitations.
+17. Manual deployment steps.
+18. Final release readiness assessment.
+
+For every item, distinguish:
+
+- IMPLEMENTED AND VERIFIED.
+- IMPLEMENTED BUT NOT VERIFIED.
+- NOT IMPLEMENTED.
+- BLOCKED BY EXTERNAL ACCESS.
+
+Never mark an item complete without evidence.
+
+FINAL INSTRUCTION:
+
+Your objective is to make BATON a trustworthy, complete and independently usable research-continuity product.
+
+Prioritize security, evidence integrity, functionality, reliability and usability over adding unnecessary features.
+
+Do not sacrifice existing working functionality.
+
+Do not fabricate results.
+
+Inspect, fix, test, verify and document the actual project.
