@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: codefront4
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: ./data
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
